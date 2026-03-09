@@ -9,7 +9,7 @@ Deepgram Nova-3 によるリアルタイム音声認識ツール。
 
 [![GitHub Stars](https://img.shields.io/github/stars/yohey-w/shogun-speech-2-text?style=social)](https://github.com/yohey-w/shogun-speech-2-text)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![v1.0.0](https://img.shields.io/badge/v1.0.0-Initial_Release-ff6600?style=flat-square)](https://github.com/yohey-w/shogun-speech-2-text/releases/tag/v1.0.0)
+[![v1.0.1](https://img.shields.io/badge/v1.0.1-Patch_Release-ff6600?style=flat-square)](https://github.com/yohey-w/shogun-speech-2-text/releases/tag/v1.0.1)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
 
 [English](README.md) | [日本語](README_ja.md)
@@ -73,7 +73,8 @@ start.bat            # 起動！
 1. [Deepgram Console](https://console.deepgram.com) にアクセス
 2. **Googleアカウント**でサインアップ（$200無料クレジット、カード不要）
 3. APIキーを作成 — **Adminロール**を選択すると残高表示が有効に
-4. `.env` に貼り付け
+4. `.env` には **Secret** を貼り付け
+5. **Identifier** のUUIDはAPIキー本体ではない。**Secret** は作成時に一度だけ表示される
 
 <p align="center">
   <img src="docs/api_key_admin_role.png" alt="APIキー作成時にAdminロールを選択" width="480">
@@ -126,6 +127,13 @@ DEEPGRAM_KEYTERMS=デプロイ,WebSocket,API,GitHub,Claude,将軍システム
 - 上限: 1リクエスト500トークン（推奨20-50語）
 - 固有名詞・社内用語・技術用語に効果大
 - 空にすれば無効化
+- 非ASCII文字を使う場合は `.env` を UTF-8 で保存すること
+
+---
+
+## 注意
+
+- Windowsスタートアップ登録は [Issue #1](https://github.com/yohey-w/shogun-speech-2-text/issues/1) で検討中。v1.0.1 では見送っている。
 
 ---
 

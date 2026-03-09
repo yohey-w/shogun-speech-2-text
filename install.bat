@@ -37,6 +37,7 @@ if not exist .env (
     echo [ACTION REQUIRED] Edit .env and set your DEEPGRAM_API_KEY
     echo   Get your free key at https://console.deepgram.com
     echo   Sign up with Google = $200 free credit
+    echo   If you add non-ASCII keyterms later, save .env as UTF-8
 )
 
 echo.

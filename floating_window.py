@@ -293,7 +293,7 @@ class FloatingWindow:
     def _setup_hotkeys(self) -> None:
         """グローバルホットキーを登録する（Ctrl+Space）"""
         if not PYNPUT_AVAILABLE:
-            print("[WARN] ホットキー無効 — pynput が必要です: pip install pynput")
+            print("[WARN] ホットキー無効 - pynput が必要です: pip install pynput")
             return
 
         ref = self
@@ -318,7 +318,7 @@ class FloatingWindow:
         from main import check_balance
 
         print("=" * 48)
-        print("  shogun-voice Phase 3 — フローティングUI")
+        print("  shogun-voice Phase 3 - フローティングUI")
         balance = check_balance()
         if balance:
             print(f"  {balance}")

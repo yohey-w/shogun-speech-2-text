@@ -9,7 +9,7 @@ Speak into your mic, text appears in any app. That simple.
 
 [![GitHub Stars](https://img.shields.io/github/stars/yohey-w/shogun-speech-2-text?style=social)](https://github.com/yohey-w/shogun-speech-2-text)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![v1.0.0](https://img.shields.io/badge/v1.0.0-Initial_Release-ff6600?style=flat-square)](https://github.com/yohey-w/shogun-speech-2-text/releases/tag/v1.0.0)
+[![v1.0.1](https://img.shields.io/badge/v1.0.1-Patch_Release-ff6600?style=flat-square)](https://github.com/yohey-w/shogun-speech-2-text/releases/tag/v1.0.1)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
 
 [English](README.md) | [日本語](README_ja.md)
@@ -73,7 +73,8 @@ Press **Ctrl+Space**, speak, done.
 1. Go to [Deepgram Console](https://console.deepgram.com)
 2. Sign up with **Google** ($200 free credit, no card required)
 3. Create an API key — select **Admin** role for balance display
-4. Paste into `.env`
+4. Copy the **Secret** into `.env`
+5. Ignore the **Identifier** UUID. It is not the API key, and the Secret is shown only once when you create it.
 
 <p align="center">
   <img src="docs/api_key_admin_role.png" alt="Select Admin role when creating API key" width="480">
@@ -126,6 +127,13 @@ DEEPGRAM_KEYTERMS=deploy,WebSocket,API,GitHub,Claude
 - Limit: 500 tokens per request (20-50 terms recommended)
 - Best for: proper nouns, company names, industry jargon
 - Leave empty to disable
+- If you add non-ASCII terms, keep `.env` saved as UTF-8
+
+---
+
+## Notes
+
+- Windows startup registration is being tracked in [Issue #1](https://github.com/yohey-w/shogun-speech-2-text/issues/1). It is intentionally out of scope for v1.0.1.
 
 ---
 

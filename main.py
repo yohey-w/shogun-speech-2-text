@@ -39,7 +39,7 @@ except ImportError:
 except Exception as e:
     # WSL2環境ではX11/Win32アクセスができないためエラーになる
     print(f"[INFO] キーストローク送信初期化失敗 (WSL2環境では正常): {e}")
-    print("[INFO] キーストローク送信: 無効 — Windows上でPythonを直接実行する必要あり")
+    print("[INFO] キーストローク送信: 無効 - Windows上でPythonを直接実行する必要あり")
 
 
 def send_keystrokes(text: str) -> None:
@@ -60,13 +60,18 @@ def _load_keyterms() -> list[str]:
     return [t.strip() for t in raw.split(",") if t.strip()]
 
 
+def _load_env() -> None:
+    """Windowsでも .env を UTF-8 として安定して読み込む。"""
+    load_dotenv(encoding="utf-8")
+
+
 # 音声認識中フラグ（tray.pyから制御するためグローバル）
 is_running = True
 
 
 async def run_transcription() -> None:
     """Deepgram Nova-3でマイク音声をリアルタイム文字起こしする"""
-    load_dotenv()
+    _load_env()
     api_key = os.getenv("DEEPGRAM_API_KEY")
     if not api_key:
         print("[ERROR] DEEPGRAM_API_KEY が設定されていません。")
@@ -183,7 +188,7 @@ async def run_transcription_with_callbacks(
         on_final:   確定テキストを受け取るコールバック (text: str) -> None
         should_stop: True を返すと認識を停止するコールバック () -> bool
     """
-    load_dotenv()
+    _load_env()
     api_key = os.getenv("DEEPGRAM_API_KEY")
     if not api_key:
         print("[ERROR] DEEPGRAM_API_KEY が設定されていません。")
@@ -313,7 +318,7 @@ async def run_transcription_with_callbacks(
 
 def check_balance() -> str | None:
     """Deepgramの残高を取得して表示用文字列を返す"""
-    load_dotenv()
+    _load_env()
     api_key = os.getenv("DEEPGRAM_API_KEY")
     if not api_key:
         return None
@@ -348,7 +353,7 @@ def check_balance() -> str | None:
 def main() -> None:
     """エントリーポイント"""
     print("=" * 40)
-    print("  shogun-voice — Deepgram Nova-3 STT")
+    print("  shogun-voice - Deepgram Nova-3 STT")
     print("  Windows+Hの精度に絶望した将軍が作った")
     print("=" * 40)
 
