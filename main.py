@@ -23,15 +23,44 @@ from deepgram import (
 )
 
 
+def _find_input_device() -> dict | None:
+    """利用可能な入力デバイスを探す。見つからなければ None を返す。"""
+    try:
+        devices = sd.query_devices()
+    except Exception as e:
+        print(f"[ERROR] オーディオデバイスの列挙に失敗: {e}")
+        return None
+
+    # まずデフォルト入力デバイスを試す
+    try:
+        default = sd.query_devices(kind='input')
+        if default and default.get('max_input_channels', 0) > 0:
+            print(f"[INFO] 入力デバイス: {default['name']}")
+            return default
+    except Exception:
+        pass
+
+    # デフォルトが無い場合、入力チャンネルを持つデバイスを探す
+    if isinstance(devices, list):
+        for d in devices:
+            if d.get('max_input_channels', 0) > 0:
+                print(f"[INFO] 入力デバイス (フォールバック): {d['name']} (index={d.get('index', '?')})")
+                return d
+
+    return None
+
+
 class Microphone:
     """sounddevice ベースのマイク入力クラス（pyaudio 代替）"""
     RATE = 16000
     CHUNK = 8000
 
-    def __init__(self, send_fn):
+    def __init__(self, send_fn, loop=None):
         self._send = send_fn
+        self._loop = loop  # asyncio event loop（スレッドからawaitするため）
         self._thread = None
         self._stop = threading.Event()
+        self._device = None  # デバイスindex（Noneならデフォルト）
 
     def start(self):
         self._stop.clear()
@@ -39,15 +68,39 @@ class Microphone:
         self._thread.start()
 
     def _stream(self):
-        with sd.RawInputStream(
-            samplerate=self.RATE,
-            channels=1,
-            dtype="int16",
-            blocksize=self.CHUNK,
-        ) as stream:
-            while not self._stop.is_set():
-                data, _ = stream.read(self.CHUNK)
-                self._send(bytes(data))
+        try:
+            with sd.RawInputStream(
+                samplerate=self.RATE,
+                channels=1,
+                dtype="int16",
+                blocksize=self.CHUNK,
+                device=self._device,
+            ) as stream:
+                while not self._stop.is_set():
+                    data, _ = stream.read(self.CHUNK)
+                    if self._loop:
+                        asyncio.run_coroutine_threadsafe(
+                            self._send(bytes(data)), self._loop
+                        )
+                    else:
+                        self._send(bytes(data))
+        except sd.PortAudioError as e:
+            error_msg = str(e)
+            print(f"\n[ERROR] マイク入力を開けませんでした: {error_msg}")
+            if "no driver" in error_msg.lower() or "9999" in error_msg or "MME error" in error_msg:
+                print()
+                print("=" * 50)
+                print("  マイクが認識されていません。以下を確認してください:")
+                print()
+                print("  1. マイクがPCに接続されているか確認")
+                print("  2. Windowsの設定 → システム → サウンド → 入力")
+                print("     でマイクデバイスが表示されているか確認")
+                print("  3. Windowsの設定 → プライバシーとセキュリティ")
+                print("     → マイク → アプリにマイクへのアクセスを")
+                print("     許可する がONになっているか確認")
+                print("  4. デバイスマネージャーでオーディオドライバー")
+                print("     がインストールされているか確認")
+                print("=" * 50)
 
     def finish(self):
         self._stop.set()
@@ -180,7 +233,15 @@ async def run_transcription() -> None:
         print("[ERROR] Deepgramへの接続に失敗しました。APIキーを確認してください。")
         sys.exit(1)
 
-    microphone = Microphone(connection.send)
+    device_info = _find_input_device()
+    if device_info is None:
+        print()
+        print("[ERROR] 利用可能なマイク入力デバイスが見つかりません。")
+        print("  → マイクを接続し、Windowsのサウンド設定で有効にしてください。")
+        print("  → Windowsの設定 → プライバシー → マイク のアクセス許可も確認してください。")
+        sys.exit(1)
+
+    microphone = Microphone(connection.send, loop=asyncio.get_event_loop())
 
     print("マイク入力中... Ctrl+Cで停止")
     print("-" * 40)
@@ -308,7 +369,13 @@ async def run_transcription_with_callbacks(
         print("[ERROR] Deepgramへの接続に失敗しました。APIキーを確認してください。")
         return
 
-    microphone = Microphone(connection.send)
+    device_info = _find_input_device()
+    if device_info is None:
+        print("[ERROR] 利用可能なマイク入力デバイスが見つかりません。")
+        print("  → マイクを接続し、Windowsのサウンド設定で有効にしてください。")
+        return
+
+    microphone = Microphone(connection.send, loop=asyncio.get_event_loop())
     microphone.start()
 
     _KEEPALIVE_INTERVAL = 8  # 8秒ごとにkeepalive ping
