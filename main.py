@@ -11,16 +11,48 @@ import os
 import sys
 import asyncio
 import time as _time
+import threading
 import requests
-import pyaudio
+import sounddevice as sd
 from dotenv import load_dotenv
 from deepgram import (
     DeepgramClient,
     DeepgramClientOptions,
     LiveTranscriptionEvents,
     LiveOptions,
-    Microphone,
 )
+
+
+class Microphone:
+    """sounddevice ベースのマイク入力クラス（pyaudio 代替）"""
+    RATE = 16000
+    CHUNK = 8000
+
+    def __init__(self, send_fn):
+        self._send = send_fn
+        self._thread = None
+        self._stop = threading.Event()
+
+    def start(self):
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._stream, daemon=True)
+        self._thread.start()
+
+    def _stream(self):
+        with sd.RawInputStream(
+            samplerate=self.RATE,
+            channels=1,
+            dtype="int16",
+            blocksize=self.CHUNK,
+        ) as stream:
+            while not self._stop.is_set():
+                data, _ = stream.read(self.CHUNK)
+                self._send(bytes(data))
+
+    def finish(self):
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=2)
 
 # キーストローク送信（Phase 2b）
 # WSL2からWindowsウィンドウへの直接キーストローク送信は制約あり

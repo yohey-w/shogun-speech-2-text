@@ -23,24 +23,7 @@ if %errorlevel% neq 0 (
 echo [2/3] Installing dependencies...
 call .venv\Scripts\activate.bat
 
-echo Installing PyAudio...
-pip install --no-cache-dir pyaudio --only-binary :all:
-if %errorlevel% neq 0 (
-    echo [WARN] No prebuilt PyAudio wheel found. Trying pipwin...
-    pip install --no-cache-dir pipwin
-    pipwin install pyaudio
-    if %errorlevel% neq 0 (
-        echo [ERROR] PyAudio install failed.
-        echo   Please install Microsoft C++ Build Tools from:
-        echo   https://visualstudio.microsoft.com/visual-cpp-build-tools/
-        echo   Then re-run install.bat
-        pause
-        exit /b 1
-    )
-)
-
-echo Installing remaining dependencies...
-pip install --no-cache-dir deepgram-sdk>=3.0.0,<4.0.0 python-dotenv>=1.0.0 requests>=2.31.0 pynput>=1.7.6 pyautogui>=0.9.54 pyperclip>=1.8.0 pystray>=0.19.5 Pillow>=10.0.0
+pip install --no-cache-dir -r requirements.txt
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to install dependencies.
     pause
