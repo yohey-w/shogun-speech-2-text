@@ -22,12 +22,21 @@ if %errorlevel% neq 0 (
 
 echo [2/3] Installing dependencies...
 call .venv\Scripts\activate.bat
-pip install -r requirements.txt
+
+pip install --no-cache-dir -r requirements.txt
 if %errorlevel% neq 0 (
-    echo [ERROR] pip install failed. If pyaudio fails, try:
-    echo   pip install pipwin ^&^& pipwin install pyaudio
-    pause
-    exit /b 1
+    echo [WARN] pyaudio build failed. Installing Microsoft C++ Build Tools via winget...
+    winget install Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+    if %errorlevel% neq 0 (
+        echo [WARN] winget install failed or already installed. Retrying pip...
+    )
+    pip install --no-cache-dir -r requirements.txt
+    if %errorlevel% neq 0 (
+        echo [ERROR] Still failed after installing Build Tools.
+        echo   Please restart your PC and re-run install.bat
+        pause
+        exit /b 1
+    )
 )
 
 echo [3/3] Setting up .env...
