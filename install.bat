@@ -23,20 +23,28 @@ if %errorlevel% neq 0 (
 echo [2/3] Installing dependencies...
 call .venv\Scripts\activate.bat
 
-pip install --no-cache-dir -r requirements.txt
+echo Installing PyAudio...
+pip install --no-cache-dir pyaudio --only-binary :all:
 if %errorlevel% neq 0 (
-    echo [WARN] pyaudio build failed. Installing Microsoft C++ Build Tools via winget...
-    winget install Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+    echo [WARN] No prebuilt PyAudio wheel found. Trying pipwin...
+    pip install --no-cache-dir pipwin
+    pipwin install pyaudio
     if %errorlevel% neq 0 (
-        echo [WARN] winget install failed or already installed. Retrying pip...
-    )
-    pip install --no-cache-dir -r requirements.txt
-    if %errorlevel% neq 0 (
-        echo [ERROR] Still failed after installing Build Tools.
-        echo   Please restart your PC and re-run install.bat
+        echo [ERROR] PyAudio install failed.
+        echo   Please install Microsoft C++ Build Tools from:
+        echo   https://visualstudio.microsoft.com/visual-cpp-build-tools/
+        echo   Then re-run install.bat
         pause
         exit /b 1
     )
+)
+
+echo Installing remaining dependencies...
+pip install --no-cache-dir deepgram-sdk>=3.0.0,<4.0.0 python-dotenv>=1.0.0 requests>=2.31.0 pynput>=1.7.6 pyautogui>=0.9.54 pyperclip>=1.8.0 pystray>=0.19.5 Pillow>=10.0.0
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to install dependencies.
+    pause
+    exit /b 1
 )
 
 echo [3/3] Setting up .env...
